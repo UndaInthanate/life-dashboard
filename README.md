@@ -58,15 +58,19 @@ DATABASE_URL=your_postgresql_connection_string
 PORT=3000
 ```
 
-4. Start the application:
+4. The database tables will be created automatically on first run. The application uses the `initDB()` function in `routes/finance.js` to create all necessary tables if they don't exist.
+
+5. Start the application:
 ```bash
 node app.js
 ```
 
-5. Open your browser and navigate to:
+6. Open your browser and navigate to:
 ```
 http://localhost:3000
 ```
+
+7. (Optional) Add sample data for testing - see "Sample Data" section below.
 
 ## 🗄️ Database Schema
 
@@ -81,6 +85,38 @@ The application automatically creates the following tables on startup:
 - `workout_log` - Workout history
 - `stock_portfolio` - Stock holdings
 - `goals` - Personal goals
+
+### Automatic Database Setup
+
+When you run the application for the first time, it will automatically:
+1. Connect to your PostgreSQL database using `DATABASE_URL`
+2. Create all required tables if they don't exist
+3. You can start using the application immediately
+
+**No manual SQL scripts needed!** The `initDB()` function handles everything.
+
+### Sample Data (Optional)
+
+If you want to test with sample data, you can add it through the web interface or run these SQL commands:
+
+```sql
+-- Sample Categories
+INSERT INTO category (name, type) VALUES 
+  ('เงินเดือน', 'income'),
+  ('ค่าอาหาร', 'expense'),
+  ('ค่าเดินทาง', 'expense'),
+  ('ขายของออนไลน์', 'income');
+
+-- Sample Transaction
+INSERT INTO transaction (date, type, category_id, amount, detail) VALUES
+  (CURRENT_DATE, 'income', 1, 30000.00, 'เงินเดือนประจำเดือน'),
+  (CURRENT_DATE, 'expense', 2, 150.00, 'ข้าวเที่ยง');
+
+-- Initial Balance Setting
+INSERT INTO settings (key, value) VALUES
+  ('initial_balance', '50000.00')
+  ON CONFLICT (key) DO UPDATE SET value = '50000.00';
+```
 
 ## 🎨 Features Highlights
 
