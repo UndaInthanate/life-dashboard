@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="dark-mode">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>💰 Life Dashboard</h2>
+      <div class="theme-controls">
+        <button class="theme-toggle">🌓</button>
+        <button class="lang-toggle">🇬🇧 EN</button>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-title">💰 การเงิน</div>
+        <a href="/" class="nav-item <%= activePage === 'overview' ? 'active' : '' %>">
+          <span>📊</span> ภาพรวม
+        </a>
+        <a href="/transactions" class="nav-item <%= activePage === 'transactions' ? 'active' : '' %>">
+          <span>🧾</span> ธุรกรรม
+        </a>
+        <a href="/debts" class="nav-item <%= activePage === 'debts' ? 'active' : '' %>">
+          <span>⚠️</span> หนี้สิน
+        </a>
+        <a href="/fixed-expenses" class="nav-item <%= activePage === 'fixed-expenses' ? 'active' : '' %>">
+          <span>📌</span> รายจ่ายคงที่
+        </a>
+        <a href="/categories" class="nav-item <%= activePage === 'categories' ? 'active' : '' %>">
+          <span>🏷️</span> หมวดหมู่
+        </a>
+        <a href="/settings" class="nav-item <%= activePage === 'settings' ? 'active' : '' %>">
+          <span>⚙️</span> ตั้งค่า
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">💪 สุขภาพ</div>
+        <a href="/health" class="nav-item">
+          <span>🏃</span> ออกกำลังกาย
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">📈 หุ้น</div>
+        <a href="/stocks" class="nav-item">
+          <span>💹</span> พอร์ตโฟลิโอ
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">🎯 เป้าหมาย</div>
+        <a href="/goals" class="nav-item">
+          <span>📝</span> เป้าหมาย
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar" id="overview">
+      <h1>สรุปภาพรวมการเงิน</h1>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card balance">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <h3>เงินทั้งหมด</h3>
+          <p class="amount"><%= currentBalance.toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</p>
+        </div>
+      </div>
+      <div class="summary-card income">
+        <div class="card-icon">📈</div>
+        <div class="card-content">
+          <h3>รายรับทั้งหมด</h3>
+          <p class="amount"><%= totalIncome.toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</p>
+        </div>
+      </div>
+      <div class="summary-card expense">
+        <div class="card-icon">📉</div>
+        <div class="card-content">
+          <h3>รายจ่ายทั้งหมด</h3>
+          <p class="amount"><%= totalExpense.toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</p>
+        </div>
+      </div>
+      <div class="summary-card debt">
+        <div class="card-icon">⚠️</div>
+        <div class="card-content">
+          <h3>หนี้สินทั้งหมด</h3>
+          <p class="amount"><%= totalDebt.toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-tables">
+      <div class="table-section">
+        <h2>บัญชีธุรกรรม (ล่าสุด)</h2>
+        <div class="table-stats">
+          <div class="stat-item">
+            <span class="stat-label">รายการทั้งหมด</span>
+            <span class="stat-value"><%= transactions.length %></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">รายรับล่าสุด</span>
+            <span class="stat-value positive"><%= transactions.filter(t => t.type === 'income').length %> รายการ</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">รายจ่ายล่าสุด</span>
+            <span class="stat-value negative"><%= transactions.filter(t => t.type === 'expense').length %> รายการ</span>
+          </div>
+        </div>
+        <table>
+          <tr>
+            <th>วันที่</th>
+            <th>ประเภท</th>
+            <th>หมวดหมู่</th>
+            <th>จำนวนเงิน</th>
+            <th>รายละเอียด</th>
+          </tr>
+          <% transactions.forEach(t => { %>
+            <tr>
+              <td><%= t.date.toISOString().slice(0,10) %></td>
+              <td><span class="<%= t.type === 'income' ? 'income' : 'expense' %>" data-translate-type="<%= t.type %>"><%= t.type === 'income' ? 'รายรับ' : 'รายจ่าย' %></span></td>
+              <td><%= t.category_name %></td>
+              <td><%= t.amount %></td>
+              <td><%= t.detail || '-' %></td>
+            </tr>
+          <% }) %>
+        </table>
+      </div>
+      <div class="table-section">
+        <h2>หนี้สิน</h2>
+        <div class="table-stats">
+          <div class="stat-item">
+            <span class="stat-label">จำนวนหนี้ทั้งหมด</span>
+            <span class="stat-value warning"><%= debts.length %> รายการ</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">ยอดรวมหนี้สิน</span>
+            <span class="stat-value negative"><%= totalDebt.toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">จ่ายต่อเดือนรวม</span>
+            <span class="stat-value"><%= debts.reduce((sum, d) => sum + (parseFloat(d.monthly_payment) || 0), 0).toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</span>
+          </div>
+        </div>
+        <table>
+          <tr>
+            <th>ชื่อหนี้</th>
+            <th>ยอดหนี้</th>
+            <th>จ่ายต่อเดือน</th>
+            <th>วันครบกำหนด</th>
+            <th>หมายเหตุ</th>
+          </tr>
+          <% debts.forEach(d => { %>
+            <tr>
+              <td><%= d.name %></td>
+              <td><%= d.amount %></td>
+              <td><%= d.monthly_payment || '-' %></td>
+              <td><%= d.due_date ? d.due_date.toISOString().slice(0,10) : '-' %></td>
+              <td><%= d.note || '-' %></td>
+            </tr>
+          <% }) %>
+        </table>
+      </div>
+      <div class="table-section">
+        <h2>รายจ่ายคงที่</h2>
+        <div class="table-stats">
+          <div class="stat-item">
+            <span class="stat-label">จำนวนรายการ</span>
+            <span class="stat-value"><%= fixed_expenses.length %> รายการ</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">ยอดรวมต่อเดือน</span>
+            <span class="stat-value negative"><%= fixed_expenses.reduce((sum, f) => sum + parseFloat(f.amount), 0).toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">ยอดรวมต่อปี</span>
+            <span class="stat-value"><%= (fixed_expenses.reduce((sum, f) => sum + parseFloat(f.amount), 0) * 12).toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</span>
+          </div>
+        </div>
+        <table>
+          <tr>
+            <th>ชื่อรายจ่าย</th>
+            <th>จำนวนเงิน</th>
+            <th>วันที่จ่าย</th>
+            <th>หมายเหตุ</th>
+          </tr>
+          <% fixed_expenses.forEach(f => { %>
+            <tr>
+              <td><%= f.name %></td>
+              <td><%= f.amount %></td>
+              <td><%= f.pay_date || '-' %></td>
+              <td><%= f.note || '-' %></td>
+            </tr>
+          <% }) %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dark Mode Toggle
+    const themeToggle = document.querySelector('.theme-toggle');
+    const body = document.body;
+    
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      body.classList.remove('dark-mode');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const newTheme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+    });
+
+    // Language Toggle
+    const langToggle = document.querySelector('.lang-toggle');
+    const translations = {
+      th: {
+        title: '💰 Life Dashboard',
+        overview: 'ภาพรวม',
+        transactions: 'ธุรกรรม',
+        debts: 'หนี้สิน',
+        fixedExpenses: 'รายจ่ายคงที่',
+        categories: 'หมวดหมู่',
+        settings: 'ตั้งค่าเงินต้น',
+        summaryTitle: 'สรุปภาพรวมการเงิน',
+        totalBalance: 'เงินทั้งหมด',
+        totalIncome: 'รายรับทั้งหมด',
+        totalExpense: 'รายจ่ายทั้งหมด',
+        totalDebt: 'หนี้สินทั้งหมด',
+        transactionHistory: 'บัญชีธุรกรรม (ล่าสุด)',
+        debtList: 'หนี้สิน',
+        fixedExpenseList: 'รายจ่ายคงที่',
+        date: 'วันที่',
+        type: 'ประเภท',
+        category: 'หมวดหมู่',
+        amount: 'จำนวนเงิน',
+        detail: 'รายละเอียด',
+        income: 'รายรับ',
+        expense: 'รายจ่าย',
+        debtName: 'ชื่อหนี้',
+        debtAmount: 'ยอดหนี้',
+        monthlyPayment: 'จ่ายต่อเดือน',
+        dueDate: 'วันครบกำหนด',
+        note: 'หมายเหตุ',
+        expenseName: 'ชื่อรายจ่าย',
+        payDate: 'วันที่จ่าย',
+        totalItems: 'รายการทั้งหมด',
+        recentIncome: 'รายรับล่าสุด',
+        recentExpense: 'รายจ่ายล่าสุด',
+        items: 'รายการ',
+        totalDebtCount: 'จำนวนหนี้ทั้งหมด',
+        totalDebtAmount: 'ยอดรวมหนี้สิน',
+        totalMonthlyPayment: 'จ่ายต่อเดือนรวม',
+        itemCount: 'จำนวนรายการ',
+        monthlyTotal: 'ยอดรวมต่อเดือน',
+        yearlyTotal: 'ยอดรวมต่อปี'
+      },
+      en: {
+        title: '💰 Life Dashboard',
+        overview: 'Overview',
+        transactions: 'Transactions',
+        debts: 'Debts',
+        fixedExpenses: 'Fixed Expenses',
+        categories: 'Categories',
+        settings: 'Settings',
+        summaryTitle: 'Financial Summary',
+        totalBalance: 'Total Balance',
+        totalIncome: 'Total Income',
+        totalExpense: 'Total Expense',
+        totalDebt: 'Total Debt',
+        transactionHistory: 'Recent Transactions',
+        debtList: 'Debts',
+        fixedExpenseList: 'Fixed Expenses',
+        date: 'Date',
+        type: 'Type',
+        category: 'Category',
+        amount: 'Amount',
+        detail: 'Detail',
+        income: 'Income',
+        expense: 'Expense',
+        debtName: 'Debt Name',
+        debtAmount: 'Debt Amount',
+        monthlyPayment: 'Monthly Payment',
+        dueDate: 'Due Date',
+        note: 'Note',
+        expenseName: 'Expense Name',
+        payDate: 'Pay Date',
+        totalItems: 'Total Items',
+        recentIncome: 'Recent Income',
+        recentExpense: 'Recent Expense',
+        items: 'items',
+        totalDebtCount: 'Total Debts',
+        totalDebtAmount: 'Total Debt Amount',
+        totalMonthlyPayment: 'Total Monthly Payment',
+        itemCount: 'Total Items',
+        monthlyTotal: 'Monthly Total',
+        yearlyTotal: 'Yearly Total'
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'th';
+    
+    function updateLanguage(lang) {
+      const t = translations[lang];
+      document.querySelector('.sidebar-header h2').textContent = t.title;
+      document.querySelectorAll('.nav-item')[0].innerHTML = '<span>📊</span> ' + t.overview;
+      document.querySelectorAll('.nav-item')[1].innerHTML = '<span>🧾</span> ' + t.transactions;
+      document.querySelectorAll('.nav-item')[2].innerHTML = '<span>⚠️</span> ' + t.debts;
+      document.querySelectorAll('.nav-item')[3].innerHTML = '<span>📌</span> ' + t.fixedExpenses;
+      document.querySelectorAll('.nav-item')[4].innerHTML = '<span>🏷️</span> ' + t.categories;
+      document.querySelectorAll('.nav-item')[5].innerHTML = '<span>⚙️</span> ' + t.settings;
+      
+      document.querySelector('.top-bar h1').textContent = t.summaryTitle;
+      
+      const cards = document.querySelectorAll('.card-content h3');
+      if (cards[0]) cards[0].textContent = t.totalBalance;
+      if (cards[1]) cards[1].textContent = t.totalIncome;
+      if (cards[2]) cards[2].textContent = t.totalExpense;
+      if (cards[3]) cards[3].textContent = t.totalDebt;
+      
+      const sections = document.querySelectorAll('.table-section h2');
+      if (sections[0]) sections[0].textContent = t.transactionHistory;
+      if (sections[1]) sections[1].textContent = t.debtList;
+      if (sections[2]) sections[2].textContent = t.fixedExpenseList;
+      
+      // Translate table headers
+      const transactionHeaders = document.querySelectorAll('.table-section')[0]?.querySelectorAll('th');
+      if (transactionHeaders) {
+        if (transactionHeaders[0]) transactionHeaders[0].textContent = t.date;
+        if (transactionHeaders[1]) transactionHeaders[1].textContent = t.type;
+        if (transactionHeaders[2]) transactionHeaders[2].textContent = t.category;
+        if (transactionHeaders[3]) transactionHeaders[3].textContent = t.amount;
+        if (transactionHeaders[4]) transactionHeaders[4].textContent = t.detail;
+      }
+      
+      const debtHeaders = document.querySelectorAll('.table-section')[1]?.querySelectorAll('th');
+      if (debtHeaders) {
+        if (debtHeaders[0]) debtHeaders[0].textContent = t.debtName;
+        if (debtHeaders[1]) debtHeaders[1].textContent = t.debtAmount;
+        if (debtHeaders[2]) debtHeaders[2].textContent = t.monthlyPayment;
+        if (debtHeaders[3]) debtHeaders[3].textContent = t.dueDate;
+        if (debtHeaders[4]) debtHeaders[4].textContent = t.note;
+      }
+      
+      const expenseHeaders = document.querySelectorAll('.table-section')[2]?.querySelectorAll('th');
+      if (expenseHeaders) {
+        if (expenseHeaders[0]) expenseHeaders[0].textContent = t.expenseName;
+        if (expenseHeaders[1]) expenseHeaders[1].textContent = t.amount;
+        if (expenseHeaders[2]) expenseHeaders[2].textContent = t.payDate;
+        if (expenseHeaders[3]) expenseHeaders[3].textContent = t.note;
+      }
+      
+      // Translate stat labels
+      const statLabels = document.querySelectorAll('.stat-label');
+      if (statLabels[0]) statLabels[0].textContent = t.totalItems;
+      if (statLabels[1]) statLabels[1].textContent = t.recentIncome;
+      if (statLabels[2]) statLabels[2].textContent = t.recentExpense;
+      if (statLabels[3]) statLabels[3].textContent = t.totalDebtCount;
+      if (statLabels[4]) statLabels[4].textContent = t.totalDebtAmount;
+      if (statLabels[5]) statLabels[5].textContent = t.totalMonthlyPayment;
+      if (statLabels[6]) statLabels[6].textContent = t.itemCount;
+      if (statLabels[7]) statLabels[7].textContent = t.monthlyTotal;
+      if (statLabels[8]) statLabels[8].textContent = t.yearlyTotal;
+      
+      // Translate "รายการ" text in stat values
+      document.querySelectorAll('.stat-value').forEach(val => {
+        if (val.textContent.includes('รายการ')) {
+          val.textContent = val.textContent.replace('รายการ', t.items);
+        }
+      });
+      
+      // Translate table data
+      document.querySelectorAll('td[data-translate-type]').forEach(td => {
+        const type = td.getAttribute('data-translate-type');
+        td.textContent = type === 'income' ? t.income : t.expense;
+      });
+      
+      langToggle.textContent = lang === 'th' ? '🇬🇧 EN' : '🇹🇭 TH';
+    }
+
+    updateLanguage(currentLang);
+    
+    langToggle?.addEventListener('click', () => {
+      currentLang = currentLang === 'th' ? 'en' : 'th';
+      localStorage.setItem('lang', currentLang);
+      updateLanguage(currentLang);
+    });
+  </script>
+</body>
+</html>

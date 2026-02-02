@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตั้งค่าเงินต้น | Life Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="dark-mode">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>💰 Life Dashboard</h2>
+      <div class="theme-controls">
+        <button class="theme-toggle">🌓</button>
+        <button class="lang-toggle">🇬🇧 EN</button>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-title">💰 การเงิน</div>
+        <a href="/" class="nav-item <%= activePage === 'overview' ? 'active' : '' %>">
+          <span>📊</span> ภาพรวม
+        </a>
+        <a href="/transactions" class="nav-item <%= activePage === 'transactions' ? 'active' : '' %>">
+          <span>🧾</span> ธุรกรรม
+        </a>
+        <a href="/debts" class="nav-item <%= activePage === 'debts' ? 'active' : '' %>">
+          <span>⚠️</span> หนี้สิน
+        </a>
+        <a href="/fixed-expenses" class="nav-item <%= activePage === 'fixed-expenses' ? 'active' : '' %>">
+          <span>📌</span> รายจ่ายคงที่
+        </a>
+        <a href="/categories" class="nav-item <%= activePage === 'categories' ? 'active' : '' %>">
+          <span>🏷️</span> หมวดหมู่
+        </a>
+        <a href="/settings" class="nav-item <%= activePage === 'settings' ? 'active' : '' %>">
+          <span>⚙️</span> ตั้งค่า
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">💪 สุขภาพ</div>
+        <a href="/health" class="nav-item">
+          <span>🏃</span> ออกกำลังกาย
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">📈 หุ้น</div>
+        <a href="/stocks" class="nav-item">
+          <span>💹</span> พอร์ตโฟลิโอ
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">🎯 เป้าหมาย</div>
+        <a href="/goals" class="nav-item">
+          <span>📝</span> เป้าหมาย
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h1>ตั้งค่าเงินต้น</h1>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="card">
+        <h2>เงินต้นปัจจุบัน</h2>
+        <p class="amount"><%= initialBalance.toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</p>
+        <form method="POST" action="/set-initial-balance" class="form-inline">
+          <input type="number" step="0.01" name="amount" placeholder="กรอกเงินต้นใหม่" required>
+          <button type="submit">บันทึก</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dark Mode Toggle
+    const themeToggle = document.querySelector('.theme-toggle');
+    const body = document.body;
+    
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      body.classList.remove('dark-mode');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const newTheme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+    });
+
+    // Language Toggle
+    const langToggle = document.querySelector('.lang-toggle');
+    const translations = {
+      th: {
+        title: '💰 Life Dashboard',
+        overview: 'ภาพรวม',
+        transactions: 'ธุรกรรม',
+        debts: 'หนี้สิน',
+        fixedExpenses: 'รายจ่ายคงที่',
+        categories: 'หมวดหมู่',
+        settings: 'ตั้งค่าเงินต้น',
+        pageTitle: 'ตั้งค่าเงินต้น',
+        currentBalance: 'เงินต้นปัจจุบัน',
+        placeholder: 'กรอกเงินต้นใหม่',
+        save: 'บันทึก'
+      },
+      en: {
+        title: '💰 Life Dashboard',
+        overview: 'Overview',
+        transactions: 'Transactions',
+        debts: 'Debts',
+        fixedExpenses: 'Fixed Expenses',
+        categories: 'Categories',
+        settings: 'Settings',
+        pageTitle: 'Initial Balance Settings',
+        currentBalance: 'Current Initial Balance',
+        placeholder: 'Enter new initial balance',
+        save: 'Save'
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'th';
+    
+    function updateLanguage(lang) {
+      const t = translations[lang];
+      document.querySelector('.sidebar-header h2').textContent = t.title;
+      document.querySelectorAll('.nav-item')[0].innerHTML = '<span>📊</span> ' + t.overview;
+      document.querySelectorAll('.nav-item')[1].innerHTML = '<span>🧾</span> ' + t.transactions;
+      document.querySelectorAll('.nav-item')[2].innerHTML = '<span>⚠️</span> ' + t.debts;
+      document.querySelectorAll('.nav-item')[3].innerHTML = '<span>📌</span> ' + t.fixedExpenses;
+      document.querySelectorAll('.nav-item')[4].innerHTML = '<span>🏷️</span> ' + t.categories;
+      document.querySelectorAll('.nav-item')[5].innerHTML = '<span>⚙️</span> ' + t.settings;
+      
+      document.querySelector('.top-bar h1').textContent = t.pageTitle;
+      document.querySelector('.card h2').textContent = t.currentBalance;
+      
+      document.querySelector('button[type="submit"]').textContent = t.save;
+      document.querySelector('input[name="amount"]').placeholder = t.placeholder;
+      
+      langToggle.textContent = lang === 'th' ? '🇬🇧 EN' : '🇹🇭 TH';
+    }
+
+    updateLanguage(currentLang);
+    
+    langToggle?.addEventListener('click', () => {
+      currentLang = currentLang === 'th' ? 'en' : 'th';
+      localStorage.setItem('lang', currentLang);
+      updateLanguage(currentLang);
+    });
+  </script>
+</body>
+</html>

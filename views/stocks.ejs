@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หุ้น | Life Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="dark-mode">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>💰 Life Dashboard</h2>
+      <div class="theme-controls">
+        <button class="theme-toggle">🌓</button>
+        <button class="lang-toggle">🇬🇧 EN</button>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-title">💰 การเงิน</div>
+        <a href="/" class="nav-item">
+          <span>📊</span> ภาพรวม
+        </a>
+        <a href="/transactions" class="nav-item">
+          <span>🧾</span> ธุรกรรม
+        </a>
+        <a href="/debts" class="nav-item">
+          <span>⚠️</span> หนี้สิน
+        </a>
+        <a href="/fixed-expenses" class="nav-item">
+          <span>📌</span> รายจ่ายคงที่
+        </a>
+        <a href="/categories" class="nav-item">
+          <span>🏷️</span> หมวดหมู่
+        </a>
+        <a href="/settings" class="nav-item">
+          <span>⚙️</span> ตั้งค่า
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">💪 สุขภาพ</div>
+        <a href="/health" class="nav-item">
+          <span>🏃</span> ออกกำลังกาย
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">📈 หุ้น</div>
+        <a href="/stocks" class="nav-item <%= activePage === 'stocks' ? 'active' : '' %>">
+          <span>💹</span> พอร์ตโฟลิโอ
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">🎯 เป้าหมาย</div>
+        <a href="/goals" class="nav-item">
+          <span>📝</span> เป้าหมาย
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h1>📈 การจัดการพอร์ตหุ้น</h1>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card balance">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <h3>ต้นทุนรวม</h3>
+          <p class="amount"><%= parseFloat(totalCost).toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</p>
+        </div>
+      </div>
+      <div class="summary-card income">
+        <div class="card-icon">📊</div>
+        <div class="card-content">
+          <h3>มูลค่าปัจจุบัน</h3>
+          <p class="amount"><%= parseFloat(totalValue).toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿</p>
+        </div>
+      </div>
+      <div class="summary-card <%= parseFloat(totalProfit) >= 0 ? 'income' : 'expense' %>">
+        <div class="card-icon"><%= parseFloat(totalProfit) >= 0 ? '📈' : '📉' %></div>
+        <div class="card-content">
+          <h3>กำไร/ขาดทุน</h3>
+          <p class="amount" style="color: <%= parseFloat(totalProfit) >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)' %>">
+            <%= parseFloat(totalProfit) >= 0 ? '+' : '' %><%= parseFloat(totalProfit).toLocaleString('th-TH', {minimumFractionDigits: 2}) %> ฿
+            (<%= parseFloat(totalProfitPercent) >= 0 ? '+' : '' %><%= parseFloat(totalProfitPercent).toFixed(2) %>%)
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="card">
+        <h2>➕ เพิ่มหุ้นในพอร์ต</h2>
+        <form method="POST" action="/add-stock" class="form-inline">
+          <input type="text" name="symbol" placeholder="รหัสหุ้น (เช่น PTT, KBANK)" required>
+          <input type="text" name="name" placeholder="ชื่อหุ้น" required>
+          <input type="number" step="0.01" name="quantity" placeholder="จำนวน" required>
+          <input type="number" step="0.01" name="buy_price" placeholder="ราคาซื้อ" required>
+          <input type="date" name="buy_date" required>
+          <input type="number" step="0.01" name="current_price" placeholder="ราคาปัจจุบัน (ถ้ามี)">
+          <input type="text" name="note" placeholder="หมายเหตุ">
+          <button type="submit">เพิ่มหุ้น</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="dashboard-tables">
+      <div class="table-section">
+        <h2>💼 พอร์ตโฟลิโอหุ้น</h2>
+        <table>
+          <tr>
+            <th>รหัส</th>
+            <th>ชื่อหุ้น</th>
+            <th>จำนวน</th>
+            <th>ราคาซื้อ</th>
+            <th>ต้นทุน</th>
+            <th>ราคาปัจจุบัน</th>
+            <th>มูลค่า</th>
+            <th>กำไร/ขาดทุน</th>
+            <th>%</th>
+            <th>อัพเดทราคา</th>
+          </tr>
+          <% portfolio.forEach(s => { %>
+            <tr>
+              <td><strong><%= s.symbol %></strong></td>
+              <td><%= s.name %></td>
+              <td><%= parseFloat(s.quantity).toLocaleString('th-TH', {minimumFractionDigits: 2}) %></td>
+              <td><%= parseFloat(s.buy_price).toLocaleString('th-TH', {minimumFractionDigits: 2}) %></td>
+              <td><%= parseFloat(s.cost).toLocaleString('th-TH', {minimumFractionDigits: 2}) %></td>
+              <td><%= parseFloat(s.current_price || s.buy_price).toLocaleString('th-TH', {minimumFractionDigits: 2}) %></td>
+              <td><%= parseFloat(s.currentValue).toLocaleString('th-TH', {minimumFractionDigits: 2}) %></td>
+              <td style="color: <%= parseFloat(s.profit) >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)' %>; font-weight: 600;">
+                <%= parseFloat(s.profit) >= 0 ? '+' : '' %><%= parseFloat(s.profit).toLocaleString('th-TH', {minimumFractionDigits: 2}) %>
+              </td>
+              <td style="color: <%= parseFloat(s.profitPercent) >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)' %>; font-weight: 600;">
+                <%= parseFloat(s.profitPercent) >= 0 ? '+' : '' %><%= parseFloat(s.profitPercent).toFixed(2) %>%
+              </td>
+              <td>
+                <form method="POST" action="/update-stock-price" style="display: flex; gap: 5px;">
+                  <input type="hidden" name="id" value="<%= s.id %>">
+                  <input type="number" step="0.01" name="current_price" placeholder="ราคาใหม่" style="width: 100px; padding: 5px;" required>
+                  <button type="submit" style="padding: 5px 10px; font-size: 0.85em;">อัพเดท</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const themeToggle = document.querySelector('.theme-toggle');
+    const body = document.body;
+    
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      body.classList.remove('dark-mode');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const newTheme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+    });
+
+    const langToggle = document.querySelector('.lang-toggle');
+    langToggle?.addEventListener('click', () => {
+      // Language toggle logic here
+    });
+  </script>
+</body>
+</html>

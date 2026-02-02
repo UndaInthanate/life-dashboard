@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สุขภาพ | Life Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="dark-mode">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>💰 Life Dashboard</h2>
+      <div class="theme-controls">
+        <button class="theme-toggle">🌓</button>
+        <button class="lang-toggle">🇬🇧 EN</button>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-title">💰 การเงิน</div>
+        <a href="/" class="nav-item">
+          <span>📊</span> ภาพรวม
+        </a>
+        <a href="/transactions" class="nav-item">
+          <span>🧾</span> ธุรกรรม
+        </a>
+        <a href="/debts" class="nav-item">
+          <span>⚠️</span> หนี้สิน
+        </a>
+        <a href="/fixed-expenses" class="nav-item">
+          <span>📌</span> รายจ่ายคงที่
+        </a>
+        <a href="/categories" class="nav-item">
+          <span>🏷️</span> หมวดหมู่
+        </a>
+        <a href="/settings" class="nav-item">
+          <span>⚙️</span> ตั้งค่า
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">💪 สุขภาพ</div>
+        <a href="/health" class="nav-item <%= activePage === 'health' ? 'active' : '' %>">
+          <span>🏃</span> ออกกำลังกาย
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">📈 หุ้น</div>
+        <a href="/stocks" class="nav-item <%= activePage === 'stocks' ? 'active' : '' %>">
+          <span>💹</span> พอร์ตโฟลิโอ
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">🎯 เป้าหมาย</div>
+        <a href="/goals" class="nav-item <%= activePage === 'goals' ? 'active' : '' %>">
+          <span>📝</span> เป้าหมาย
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h1>💪 การจัดการสุขภาพและออกกำลังกาย</h1>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="card">
+        <h2>📋 เพิ่มแผนออกกำลังกาย</h2>
+        <form method="POST" action="/add-workout-plan" class="form-inline">
+          <input type="text" name="name" placeholder="ชื่อแผน (เช่น Push Day, Leg Day)" required>
+          <select name="type" required>
+            <option value="weight">เวท</option>
+            <option value="cardio">วิ่ง/คาร์ดิโอ</option>
+            <option value="mixed">ผสม</option>
+          </select>
+          <input type="text" name="target" placeholder="เป้าหมาย (เช่น หน้าอก, ขา)">
+          <input type="text" name="note" placeholder="หมายเหตุ">
+          <button type="submit">เพิ่มแผน</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>✍️ บันทึกการออกกำลังกาย</h2>
+        <form method="POST" action="/add-workout-log" class="form-inline" id="workout-form">
+          <input type="date" name="date" required>
+          <select name="type" id="workout-type" required>
+            <option value="weight">เวท</option>
+            <option value="cardio">วิ่ง/คาร์ดิโอ</option>
+          </select>
+          <input type="text" name="exercise" placeholder="ชื่อท่า/กิจกรรม" required>
+          
+          <!-- Fields for weight training -->
+          <div class="weight-fields">
+            <input type="number" step="0.1" name="weight" placeholder="น้ำหนัก (kg)">
+            <input type="number" name="sets" placeholder="เซต">
+            <input type="number" name="reps" placeholder="ครั้ง">
+          </div>
+          
+          <!-- Fields for cardio -->
+          <div class="cardio-fields" style="display: none;">
+            <input type="number" name="duration" placeholder="เวลา (นาที)">
+            <input type="number" step="0.01" name="distance" placeholder="ระยะทาง (km)">
+          </div>
+          
+          <input type="number" name="calories" placeholder="แคลอรี่">
+          <input type="text" name="note" placeholder="หมายเหตุ">
+          <button type="submit">บันทึก</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="dashboard-tables">
+      <div class="table-section">
+        <h2>📋 แผนออกกำลังกาย</h2>
+        <table>
+          <tr>
+            <th>ชื่อแผน</th>
+            <th>ประเภท</th>
+            <th>เป้าหมาย</th>
+            <th>หมายเหตุ</th>
+          </tr>
+          <% workout_plans.forEach(p => { %>
+            <tr>
+              <td><%= p.name %></td>
+              <td>
+                <span class="badge-type <%= p.type %>">
+                  <%= p.type === 'weight' ? '🏋️ เวท' : p.type === 'cardio' ? '🏃 วิ่ง' : '🔄 ผสม' %>
+                </span>
+              </td>
+              <td><%= p.target || '-' %></td>
+              <td><%= p.note || '-' %></td>
+            </tr>
+          <% }) %>
+        </table>
+      </div>
+
+      <div class="table-section">
+        <h2>✍️ บันทึกการออกกำลังกาย (ล่าสุด 20 รายการ)</h2>
+        <table>
+          <tr>
+            <th>วันที่</th>
+            <th>ประเภท</th>
+            <th>กิจกรรม</th>
+            <th>รายละเอียด</th>
+            <th>แคลอรี่</th>
+            <th>หมายเหตุ</th>
+          </tr>
+          <% workout_logs.forEach(w => { %>
+            <tr>
+              <td><%= w.date.toISOString().slice(0,10) %></td>
+              <td>
+                <span class="badge-type <%= w.type %>">
+                  <%= w.type === 'weight' ? '🏋️ เวท' : '🏃 วิ่ง' %>
+                </span>
+              </td>
+              <td><%= w.exercise %></td>
+              <td>
+                <% if (w.type === 'weight') { %>
+                  <%= w.weight ? w.weight + ' kg' : '' %>
+                  <%= w.sets ? w.sets + ' เซต' : '' %>
+                  <%= w.reps ? w.reps + ' ครั้ง' : '' %>
+                <% } else { %>
+                  <%= w.duration ? w.duration + ' นาที' : '' %>
+                  <%= w.distance ? w.distance + ' km' : '' %>
+                <% } %>
+              </td>
+              <td><%= w.calories || '-' %></td>
+              <td><%= w.note || '-' %></td>
+            </tr>
+          <% }) %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Toggle workout form fields based on type
+    const workoutType = document.getElementById('workout-type');
+    const weightFields = document.querySelector('.weight-fields');
+    const cardioFields = document.querySelector('.cardio-fields');
+
+    function toggleWorkoutFields() {
+      if (workoutType.value === 'weight') {
+        weightFields.style.display = 'flex';
+        cardioFields.style.display = 'none';
+        weightFields.querySelectorAll('input').forEach(i => i.required = false);
+        cardioFields.querySelectorAll('input').forEach(i => i.required = false);
+      } else {
+        weightFields.style.display = 'none';
+        cardioFields.style.display = 'flex';
+        weightFields.querySelectorAll('input').forEach(i => i.required = false);
+        cardioFields.querySelectorAll('input').forEach(i => i.required = false);
+      }
+    }
+
+    toggleWorkoutFields();
+    workoutType.addEventListener('change', toggleWorkoutFields);
+
+    // Dark Mode Toggle
+    const themeToggle = document.querySelector('.theme-toggle');
+    const body = document.body;
+    
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      body.classList.remove('dark-mode');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const newTheme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+    });
+
+    // Language Toggle
+    const langToggle = document.querySelector('.lang-toggle');
+    const translations = {
+      th: {
+        title: '💰 Life Dashboard',
+        financeGroup: '💰 การเงิน',
+        healthGroup: '💪 สุขภาพ',
+        stocksGroup: '📈 หุ้น',
+        goalsGroup: '🎯 เป้าหมาย',
+        overview: 'ภาพรวม',
+        transactions: 'ธุรกรรม',
+        debts: 'หนี้สิน',
+        fixedExpenses: 'รายจ่ายคงที่',
+        categories: 'หมวดหมู่',
+        settings: 'ตั้งค่า',
+        workout: 'ออกกำลังกาย',
+        portfolio: 'พอร์ตโฟลิโอ',
+        goals: 'เป้าหมาย',
+        pageTitle: '💪 การจัดการสุขภาพและออกกำลังกาย'
+      },
+      en: {
+        title: '💰 Life Dashboard',
+        financeGroup: '💰 Finance',
+        healthGroup: '💪 Health',
+        stocksGroup: '📈 Stocks',
+        goalsGroup: '🎯 Goals',
+        overview: 'Overview',
+        transactions: 'Transactions',
+        debts: 'Debts',
+        fixedExpenses: 'Fixed Expenses',
+        categories: 'Categories',
+        settings: 'Settings',
+        workout: 'Workout',
+        portfolio: 'Portfolio',
+        goals: 'Goals',
+        pageTitle: '💪 Health & Workout Management'
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'th';
+    
+    function updateLanguage(lang) {
+      const t = translations[lang];
+      document.querySelector('.sidebar-header h2').textContent = t.title;
+      document.querySelectorAll('.nav-group-title')[0].textContent = t.financeGroup;
+      document.querySelectorAll('.nav-group-title')[1].textContent = t.healthGroup;
+      document.querySelectorAll('.nav-group-title')[2].textContent = t.stocksGroup;
+      document.querySelectorAll('.nav-group-title')[3].textContent = t.goalsGroup;
+      
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems[0].innerHTML = '<span>📊</span> ' + t.overview;
+      navItems[1].innerHTML = '<span>🧾</span> ' + t.transactions;
+      navItems[2].innerHTML = '<span>⚠️</span> ' + t.debts;
+      navItems[3].innerHTML = '<span>📌</span> ' + t.fixedExpenses;
+      navItems[4].innerHTML = '<span>🏷️</span> ' + t.categories;
+      navItems[5].innerHTML = '<span>⚙️</span> ' + t.settings;
+      navItems[6].innerHTML = '<span>🏃</span> ' + t.workout;
+      navItems[7].innerHTML = '<span>💹</span> ' + t.portfolio;
+      navItems[8].innerHTML = '<span>📝</span> ' + t.goals;
+      
+      document.querySelector('.top-bar h1').textContent = t.pageTitle;
+      
+      langToggle.textContent = lang === 'th' ? '🇬🇧 EN' : '🇹🇭 TH';
+    }
+
+    updateLanguage(currentLang);
+    
+    langToggle?.addEventListener('click', () => {
+      currentLang = currentLang === 'th' ? 'en' : 'th';
+      localStorage.setItem('lang', currentLang);
+      updateLanguage(currentLang);
+    });
+  </script>
+</body>
+</html>

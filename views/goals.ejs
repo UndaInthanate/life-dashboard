@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เป้าหมาย | Life Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="dark-mode">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>💰 Life Dashboard</h2>
+      <div class="theme-controls">
+        <button class="theme-toggle">🌓</button>
+        <button class="lang-toggle">🇬🇧 EN</button>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-title">💰 การเงิน</div>
+        <a href="/" class="nav-item">
+          <span>📊</span> ภาพรวม
+        </a>
+        <a href="/transactions" class="nav-item">
+          <span>🧾</span> ธุรกรรม
+        </a>
+        <a href="/debts" class="nav-item">
+          <span>⚠️</span> หนี้สิน
+        </a>
+        <a href="/fixed-expenses" class="nav-item">
+          <span>📌</span> รายจ่ายคงที่
+        </a>
+        <a href="/categories" class="nav-item">
+          <span>🏷️</span> หมวดหมู่
+        </a>
+        <a href="/settings" class="nav-item">
+          <span>⚙️</span> ตั้งค่า
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">💪 สุขภาพ</div>
+        <a href="/health" class="nav-item">
+          <span>🏃</span> ออกกำลังกาย
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">📈 หุ้น</div>
+        <a href="/stocks" class="nav-item">
+          <span>💹</span> พอร์ตโฟลิโอ
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">🎯 เป้าหมาย</div>
+        <a href="/goals" class="nav-item <%= activePage === 'goals' ? 'active' : '' %>">
+          <span>📝</span> เป้าหมาย
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h1>🎯 การจัดการเป้าหมาย</h1>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card balance">
+        <div class="card-icon">📝</div>
+        <div class="card-content">
+          <h3>เป้าหมายทั้งหมด</h3>
+          <p class="amount"><%= goals.length %></p>
+        </div>
+      </div>
+      <div class="summary-card income">
+        <div class="card-icon">✅</div>
+        <div class="card-content">
+          <h3>กำลังดำเนินการ</h3>
+          <p class="amount"><%= goals.filter(g => g.status === 'in-progress').length %></p>
+        </div>
+      </div>
+      <div class="summary-card expense">
+        <div class="card-icon">🎉</div>
+        <div class="card-content">
+          <h3>สำเร็จแล้ว</h3>
+          <p class="amount"><%= goals.filter(g => g.status === 'completed').length %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="card">
+        <h2>➕ เพิ่มเป้าหมายใหม่</h2>
+        <form method="POST" action="/add-goal" class="form-inline">
+          <input type="text" name="title" placeholder="ชื่อเป้าหมาย" required>
+          <textarea name="description" placeholder="รายละเอียด" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary);"></textarea>
+          <select name="type" required>
+            <option value="daily">วันนี้</option>
+            <option value="weekly">สัปดาห์นี้</option>
+            <option value="monthly">เดือนนี้</option>
+            <option value="yearly">ปีนี้</option>
+          </select>
+          <input type="date" name="due_date" placeholder="วันครบกำหนด">
+          <select name="priority">
+            <option value="high">สำคัญมาก</option>
+            <option value="medium" selected>ปานกลาง</option>
+            <option value="low">สำคัญน้อย</option>
+          </select>
+          <input type="text" name="category" placeholder="หมวดหมู่ (เช่น สุขภาพ, การเงิน)">
+          <input type="number" name="progress" min="0" max="100" placeholder="ความคืบหน้า (%)" value="0">
+          <button type="submit">เพิ่มเป้าหมาย</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="dashboard-tables">
+      <% if (daily.length > 0) { %>
+      <div class="table-section">
+        <h2>📅 เป้าหมายวันนี้</h2>
+        <% daily.forEach(g => { %>
+          <div class="goal-card <%= g.status %>">
+            <div class="goal-header">
+              <h3><%= g.title %></h3>
+              <span class="priority-badge <%= g.priority %>"><%= g.priority === 'high' ? '🔴 สำคัญ' : g.priority === 'medium' ? '🟡 ปานกลาง' : '🟢 ต่ำ' %></span>
+            </div>
+            <p class="goal-desc"><%= g.description || '-' %></p>
+            <div class="goal-meta">
+              <span>📂 <%= g.category || 'ทั่วไป' %></span>
+              <span>📅 <%= g.due_date ? g.due_date.toISOString().slice(0,10) : '-' %></span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: <%= g.progress %>%"></div>
+              <span class="progress-text"><%= g.progress %>%</span>
+            </div>
+            <form method="POST" action="/update-goal-progress" style="display: flex; gap: 10px; margin-top: 10px;">
+              <input type="hidden" name="id" value="<%= g.id %>">
+              <input type="number" name="progress" min="0" max="100" value="<%= g.progress %>" style="width: 80px; padding: 5px;">
+              <button type="submit" style="padding: 5px 15px;">อัพเดท</button>
+              <button type="button" onclick="if(confirm('ลบเป้าหมายนี้?')) { const form = document.createElement('form'); form.method = 'POST'; form.action = '/delete-goal'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'id'; input.value = '<%= g.id %>'; form.appendChild(input); document.body.appendChild(form); form.submit(); }" style="padding: 5px 15px; background: var(--accent-danger);">ลบ</button>
+            </form>
+          </div>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <% if (monthly.length > 0) { %>
+      <div class="table-section">
+        <h2>📆 เป้าหมายเดือนนี้</h2>
+        <% monthly.forEach(g => { %>
+          <div class="goal-card <%= g.status %>">
+            <div class="goal-header">
+              <h3><%= g.title %></h3>
+              <span class="priority-badge <%= g.priority %>"><%= g.priority === 'high' ? '🔴 สำคัญ' : g.priority === 'medium' ? '🟡 ปานกลาง' : '🟢 ต่ำ' %></span>
+            </div>
+            <p class="goal-desc"><%= g.description || '-' %></p>
+            <div class="goal-meta">
+              <span>📂 <%= g.category || 'ทั่วไป' %></span>
+              <span>📅 <%= g.due_date ? g.due_date.toISOString().slice(0,10) : '-' %></span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: <%= g.progress %>%"></div>
+              <span class="progress-text"><%= g.progress %>%</span>
+            </div>
+            <form method="POST" action="/update-goal-progress" style="display: flex; gap: 10px; margin-top: 10px;">
+              <input type="hidden" name="id" value="<%= g.id %>">
+              <input type="number" name="progress" min="0" max="100" value="<%= g.progress %>" style="width: 80px; padding: 5px;">
+              <button type="submit" style="padding: 5px 15px;">อัพเดท</button>
+              <button type="button" onclick="if(confirm('ลบเป้าหมายนี้?')) { const form = document.createElement('form'); form.method = 'POST'; form.action = '/delete-goal'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'id'; input.value = '<%= g.id %>'; form.appendChild(input); document.body.appendChild(form); form.submit(); }" style="padding: 5px 15px; background: var(--accent-danger);">ลบ</button>
+            </form>
+          </div>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <% if (yearly.length > 0) { %>
+      <div class="table-section">
+        <h2>📅 เป้าหมายปีนี้</h2>
+        <% yearly.forEach(g => { %>
+          <div class="goal-card <%= g.status %>">
+            <div class="goal-header">
+              <h3><%= g.title %></h3>
+              <span class="priority-badge <%= g.priority %>"><%= g.priority === 'high' ? '🔴 สำคัญ' : g.priority === 'medium' ? '🟡 ปานกลาง' : '🟢 ต่ำ' %></span>
+            </div>
+            <p class="goal-desc"><%= g.description || '-' %></p>
+            <div class="goal-meta">
+              <span>📂 <%= g.category || 'ทั่วไป' %></span>
+              <span>📅 <%= g.due_date ? g.due_date.toISOString().slice(0,10) : '-' %></span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: <%= g.progress %>%"></div>
+              <span class="progress-text"><%= g.progress %>%</span>
+            </div>
+            <form method="POST" action="/update-goal-progress" style="display: flex; gap: 10px; margin-top: 10px;">
+              <input type="hidden" name="id" value="<%= g.id %>">
+              <input type="number" name="progress" min="0" max="100" value="<%= g.progress %>" style="width: 80px; padding: 5px;">
+              <button type="submit" style="padding: 5px 15px;">อัพเดท</button>
+              <button type="button" onclick="if(confirm('ลบเป้าหมายนี้?')) { const form = document.createElement('form'); form.method = 'POST'; form.action = '/delete-goal'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'id'; input.value = '<%= g.id %>'; form.appendChild(input); document.body.appendChild(form); form.submit(); }" style="padding: 5px 15px; background: var(--accent-danger);">ลบ</button>
+            </form>
+          </div>
+        <% }) %>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <script>
+    const themeToggle = document.querySelector('.theme-toggle');
+    const body = document.body;
+    
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      body.classList.remove('dark-mode');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const newTheme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+    });
+
+    const langToggle = document.querySelector('.lang-toggle');
+    langToggle?.addEventListener('click', () => {
+      // Language toggle logic here
+    });
+  </script>
+</body>
+</html>

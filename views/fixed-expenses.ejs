@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายจ่ายคงที่ | Life Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="dark-mode">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>💰 Life Dashboard</h2>
+      <div class="theme-controls">
+        <button class="theme-toggle">🌓</button>
+        <button class="lang-toggle">🇬🇧 EN</button>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-title">💰 การเงิน</div>
+        <a href="/" class="nav-item <%= activePage === 'overview' ? 'active' : '' %>">
+          <span>📊</span> ภาพรวม
+        </a>
+        <a href="/transactions" class="nav-item <%= activePage === 'transactions' ? 'active' : '' %>">
+          <span>🧾</span> ธุรกรรม
+        </a>
+        <a href="/debts" class="nav-item <%= activePage === 'debts' ? 'active' : '' %>">
+          <span>⚠️</span> หนี้สิน
+        </a>
+        <a href="/fixed-expenses" class="nav-item <%= activePage === 'fixed-expenses' ? 'active' : '' %>">
+          <span>📌</span> รายจ่ายคงที่
+        </a>
+        <a href="/categories" class="nav-item <%= activePage === 'categories' ? 'active' : '' %>">
+          <span>🏷️</span> หมวดหมู่
+        </a>
+        <a href="/settings" class="nav-item <%= activePage === 'settings' ? 'active' : '' %>">
+          <span>⚙️</span> ตั้งค่า
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">💪 สุขภาพ</div>
+        <a href="/health" class="nav-item">
+          <span>🏃</span> ออกกำลังกาย
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">📈 หุ้น</div>
+        <a href="/stocks" class="nav-item">
+          <span>💹</span> พอร์ตโฟลิโอ
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">🎯 เป้าหมาย</div>
+        <a href="/goals" class="nav-item">
+          <span>📝</span> เป้าหมาย
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h1>รายจ่ายคงที่</h1>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="card">
+        <h2>เพิ่มรายจ่ายคงที่</h2>
+        <form method="POST" action="/add-fixed-expense" class="form-inline">
+          <input type="text" name="name" placeholder="ชื่อรายจ่ายคงที่" required>
+          <input type="number" step="0.01" name="amount" placeholder="จำนวนเงิน" required>
+          <input type="number" name="pay_date" min="1" max="31" placeholder="วันที่จ่าย">
+          <input type="text" name="note" placeholder="หมายเหตุ">
+          <button type="submit">เพิ่ม</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="dashboard-tables">
+      <div class="table-section">
+        <h2>รายการรายจ่ายคงที่</h2>
+        <table>
+          <tr>
+            <th>ชื่อรายจ่าย</th>
+            <th>จำนวนเงิน</th>
+            <th>วันที่จ่าย</th>
+            <th>หมายเหตุ</th>
+          </tr>
+          <% fixed_expenses.forEach(f => { %>
+            <tr>
+              <td><%= f.name %></td>
+              <td><%= f.amount %></td>
+              <td><%= f.pay_date || '-' %></td>
+              <td><%= f.note || '-' %></td>
+            </tr>
+          <% }) %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dark Mode Toggle
+    const themeToggle = document.querySelector('.theme-toggle');
+    const body = document.body;
+    
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      body.classList.remove('dark-mode');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const newTheme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+    });
+
+    // Language Toggle
+    const langToggle = document.querySelector('.lang-toggle');
+    const translations = {
+      th: {
+        title: '💰 Life Dashboard',
+        overview: 'ภาพรวม',
+        transactions: 'ธุรกรรม',
+        debts: 'หนี้สิน',
+        fixedExpenses: 'รายจ่ายคงที่',
+        categories: 'หมวดหมู่',
+        settings: 'ตั้งค่าเงินต้น',
+        pageTitle: 'รายจ่ายคงที่',
+        addExpense: 'เพิ่มรายจ่ายคงที่',
+        expenseList: 'รายการรายจ่ายคงที่',
+        expenseName: 'ชื่อรายจ่าย',
+        amount: 'จำนวนเงิน',
+        payDate: 'วันที่จ่าย',
+        note: 'หมายเหตุ',
+        add: 'เพิ่ม'
+      },
+      en: {
+        title: '💰 Life Dashboard',
+        overview: 'Overview',
+        transactions: 'Transactions',
+        debts: 'Debts',
+        fixedExpenses: 'Fixed Expenses',
+        categories: 'Categories',
+        settings: 'Settings',
+        pageTitle: 'Fixed Expenses',
+        addExpense: 'Add Fixed Expense',
+        expenseList: 'Fixed Expense List',
+        expenseName: 'Expense Name',
+        amount: 'Amount',
+        payDate: 'Pay Date',
+        note: 'Note',
+        add: 'Add'
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'th';
+    
+    function updateLanguage(lang) {
+      const t = translations[lang];
+      document.querySelector('.sidebar-header h2').textContent = t.title;
+      document.querySelectorAll('.nav-item')[0].innerHTML = '<span>📊</span> ' + t.overview;
+      document.querySelectorAll('.nav-item')[1].innerHTML = '<span>🧾</span> ' + t.transactions;
+      document.querySelectorAll('.nav-item')[2].innerHTML = '<span>⚠️</span> ' + t.debts;
+      document.querySelectorAll('.nav-item')[3].innerHTML = '<span>📌</span> ' + t.fixedExpenses;
+      document.querySelectorAll('.nav-item')[4].innerHTML = '<span>🏷️</span> ' + t.categories;
+      document.querySelectorAll('.nav-item')[5].innerHTML = '<span>⚙️</span> ' + t.settings;
+      
+      document.querySelector('.top-bar h1').textContent = t.pageTitle;
+      document.querySelector('.card h2').textContent = t.addExpense;
+      document.querySelector('.table-section h2').textContent = t.expenseList;
+      
+      const ths = document.querySelectorAll('th');
+      if (ths[0]) ths[0].textContent = t.expenseName;
+      if (ths[1]) ths[1].textContent = t.amount;
+      if (ths[2]) ths[2].textContent = t.payDate;
+      if (ths[3]) ths[3].textContent = t.note;
+      
+      document.querySelector('button[type="submit"]').textContent = t.add;
+      document.querySelector('input[name="name"]').placeholder = t.expenseName;
+      document.querySelector('input[name="amount"]').placeholder = t.amount;
+      document.querySelector('input[name="pay_date"]').placeholder = t.payDate;
+      document.querySelector('input[name="note"]').placeholder = t.note;
+      
+      langToggle.textContent = lang === 'th' ? '🇬🇧 EN' : '🇹🇭 TH';
+    }
+
+    updateLanguage(currentLang);
+    
+    langToggle?.addEventListener('click', () => {
+      currentLang = currentLang === 'th' ? 'en' : 'th';
+      localStorage.setItem('lang', currentLang);
+      updateLanguage(currentLang);
+    });
+  </script>
+</body>
+</html>
