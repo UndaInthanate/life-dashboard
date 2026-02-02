@@ -95,6 +95,108 @@ When you run the application for the first time, it will automatically:
 
 **No manual SQL scripts needed!** The `initDB()` function handles everything.
 
+### Manual Database Setup (Optional)
+
+If you prefer to create tables manually, here are the SQL statements:
+
+```sql
+-- Finance Tables
+CREATE TABLE IF NOT EXISTS category (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  type VARCHAR(10) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS transaction (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  date DATE NOT NULL,
+  type VARCHAR(10) NOT NULL,
+  category_id INTEGER NOT NULL,
+  amount NUMERIC(12,2) NOT NULL,
+  detail TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS debt (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  amount NUMERIC(12,2) NOT NULL,
+  monthly_payment NUMERIC(12,2),
+  due_date DATE,
+  note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS fixed_expense (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  amount NUMERIC(12,2) NOT NULL,
+  pay_date INTEGER,
+  note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  key VARCHAR(50) UNIQUE NOT NULL,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Health Tables
+CREATE TABLE IF NOT EXISTS workout_plan (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  type VARCHAR(20) NOT NULL,
+  target VARCHAR(100),
+  note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS workout_log (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  date DATE NOT NULL,
+  type VARCHAR(20) NOT NULL,
+  exercise VARCHAR(100),
+  duration INTEGER,
+  distance NUMERIC(10,2),
+  weight NUMERIC(10,2),
+  sets INTEGER,
+  reps INTEGER,
+  calories INTEGER,
+  note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stock Table
+CREATE TABLE IF NOT EXISTS stock_portfolio (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  symbol VARCHAR(20) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  quantity NUMERIC(12,4) NOT NULL,
+  buy_price NUMERIC(12,2) NOT NULL,
+  buy_date DATE NOT NULL,
+  current_price NUMERIC(12,2),
+  note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Goals Table
+CREATE TABLE IF NOT EXISTS goals (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  description TEXT,
+  type VARCHAR(20) NOT NULL,
+  due_date DATE,
+  status VARCHAR(20) DEFAULT 'in-progress',
+  priority VARCHAR(20),
+  category VARCHAR(50),
+  progress INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  completed_at TIMESTAMP
+);
+```
+
 ### Sample Data (Optional)
 
 If you want to test with sample data, you can add it through the web interface or run these SQL commands:
@@ -107,15 +209,43 @@ INSERT INTO category (name, type) VALUES
   ('ค่าเดินทาง', 'expense'),
   ('ขายของออนไลน์', 'income');
 
--- Sample Transaction
+-- Sample Transactions
 INSERT INTO transaction (date, type, category_id, amount, detail) VALUES
   (CURRENT_DATE, 'income', 1, 30000.00, 'เงินเดือนประจำเดือน'),
-  (CURRENT_DATE, 'expense', 2, 150.00, 'ข้าวเที่ยง');
+  (CURRENT_DATE, 'expense', 2, 150.00, 'ข้าวเที่ยง'),
+  (CURRENT_DATE, 'expense', 3, 50.00, 'ค่ารถเมล์');
+
+-- Sample Debt
+INSERT INTO debt (name, amount, monthly_payment, due_date, note) VALUES
+  ('สินเชื่อบ้าน', 2000000.00, 15000.00, '2026-03-01', 'ผ่อน 20 ปี');
+
+-- Sample Fixed Expense
+INSERT INTO fixed_expense (name, amount, pay_date, note) VALUES
+  ('ค่าเน็ต', 599.00, 5, 'จ่ายทุกวันที่ 5'),
+  ('ค่าไฟ', 1200.00, 10, 'โดยประมาณ');
 
 -- Initial Balance Setting
 INSERT INTO settings (key, value) VALUES
   ('initial_balance', '50000.00')
   ON CONFLICT (key) DO UPDATE SET value = '50000.00';
+
+-- Sample Workout Plan
+INSERT INTO workout_plan (name, type, target, note) VALUES
+  ('Push Day', 'weight', 'อก, ไหล่, ไตรเซ็ป', 'จันทร์-พุธ-ศุกร์');
+
+-- Sample Workout Log
+INSERT INTO workout_log (date, type, exercise, weight, sets, reps, note) VALUES
+  (CURRENT_DATE, 'weight', 'Bench Press', 60.0, 3, 10, 'รู้สึกดี');
+
+-- Sample Stock
+INSERT INTO stock_portfolio (symbol, name, quantity, buy_price, buy_date, current_price) VALUES
+  ('AAPL', 'Apple Inc.', 10, 150.00, '2025-01-15', 175.00),
+  ('TSLA', 'Tesla Inc.', 5, 200.00, '2025-02-01', 195.00);
+
+-- Sample Goals
+INSERT INTO goals (title, description, type, due_date, priority, category, progress) VALUES
+  ('ออกกำลังกาย 5 วัน', 'ออกกำลังกายอย่างน้อย 30 นาที', 'weekly', CURRENT_DATE + 7, 'high', 'สุขภาพ', 40),
+  ('อ่านหนังสือ 1 เล่ม', 'อ่านหนังสือพัฒนาตนเอง', 'monthly', CURRENT_DATE + 30, 'medium', 'การเรียนรู้', 25);
 ```
 
 ## 🎨 Features Highlights
